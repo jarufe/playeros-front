@@ -56,6 +56,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }) => {
     idmId: "",
     tipo: "",
     estado: "",
+    valido: true,
   });
   const [equ, setEqu] = useState<EquipamientoDto>();
   const [equTipos, setEquTipos] = useState<BasicoDto[]>([]);
@@ -180,6 +181,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }) => {
                       idmId: "",
                       tipo: equTipos.length > 0 ? equTipos[0].descr : "",
                       estado: equEstados.length > 0 ? equEstados[0].descr : "",
+                      valido: true,
                   });
                   onClose(); // Cerrar el formulario después de guardar
                 } else {

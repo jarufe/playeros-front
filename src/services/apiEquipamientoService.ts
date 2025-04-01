@@ -83,6 +83,70 @@ export const getEquipamientoProvinciaActivaPaging = async (token: string, page: 
     }
 };
 
+export const getEquipamientoValidoUsuarioActivo = async (token: string) => {
+    try {
+        axios.defaults.withCredentials = true;
+        const response = await axios.get(`${API_URL}/equipamiento/propios/validos`, 
+            {
+            headers: {
+            'Authorization':'Bearer '+ token,
+            }
+          });
+        return response.data;
+    } catch (error) {
+        console.error('Error leyendo del back el equipamiento de la provincia activa:', error);
+        throw error;
+    }
+};
+
+export const getEquipamientoValidoUsuarioActivoPaging = async (token: string, page:number, size:number) => {
+    try {
+        axios.defaults.withCredentials = true;
+        const response = await axios.get<Page<EquipamientoDto>>(`${API_URL}/equipamiento/propiospaging/validos?page=${page}&size=${size}`, 
+            {
+            headers: {
+            'Authorization':'Bearer '+ token,
+            }
+          });
+        return response.data;
+    } catch (error) {
+        console.error('Error leyendo del back el equipamiento de la provincia activa:', error);
+        throw error;
+    }
+};
+
+export const getEquipamientoValidoProvinciaActiva = async (token: string) => {
+    try {
+        axios.defaults.withCredentials = true;
+        const response = await axios.get<EquipamientoDto[]>(`${API_URL}/equipamiento/provinciaactiva/validos`, 
+            {
+            headers: {
+            'Authorization':'Bearer '+ token,
+            }
+          });
+        return response.data;
+    } catch (error) {
+        console.error('Error leyendo del back el equipamiento de la provincia activa:', error);
+        throw error;
+    }
+};
+
+export const getEquipamientoValidoProvinciaActivaPaging = async (token: string, page: number, size: number) => {
+    try {
+        axios.defaults.withCredentials = true;
+        const response = await axios.get<Page<EquipamientoDto>>(`${API_URL}/equipamiento/provinciaactivapaging/validos?page=${page}&size=${size}`, 
+            {
+            headers: {
+            'Authorization':'Bearer '+ token,
+            }
+          });
+        return response.data;
+    } catch (error) {
+        console.error('Error leyendo del back el equipamiento de la provincia activa:', error);
+        throw error;
+    }
+};
+
 export const addEquipo = async (token: string, equ: EquipamientoDto) => {
     try {
         axios.defaults.withCredentials = true;

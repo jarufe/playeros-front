@@ -49,11 +49,13 @@ export interface EquipamientoDto {
     idmId: string
     tipo: string
     estado: string
+    valido: boolean
 }
 
 export interface BasicoDto {
     id: string
     descr: string
+    valido: boolean
 }
 
 export interface FuncionalidadDto {
