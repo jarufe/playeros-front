@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import Cookies from 'js-cookie';
 //Componentes reutilizables, hooks, etc
 import { useAuth } from "../hooks/useAuth";
-import { getEquipamientoProvinciaActivaPaging } from '../services/apiEquipamientoService.ts';
+import { getEquipamientoProvinciaActivaPaging, getEquipamientoValidoProvinciaActivaPaging } from '../services/apiEquipamientoService.ts';
 import { Page, EquipamientoDto } from "../shared/EntityTypes.ts"
 import { InvCreaEquipoComponent } from "./InvCreaEquipoComponent.tsx";
 import { InvDetalleEquipoComponent } from "./InvDetalleEquipoComponent.tsx";
@@ -14,10 +14,12 @@ import {
     Container, 
     IconButton,
     Button,
-    Typography 
+    Typography,
+    ToolTip
 } from "@mui/material"
 import { Edit, Add } from "@mui/icons-material";
 import { GridColDef, DataGrid, GridRowParams } from "@mui/x-data-grid"
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 interface EquipamientoDataGridColumns {
     id: string
@@ -38,12 +40,18 @@ export const InvVerEquiposComponent = () => {
     const [rowsPerPage, setRowsPerPage] = useState<number>(5)
     const [totalRows, setTotalRows] = useState<number>(0)
     const [page, setPage] = useState<number>(0)
+    const [paginationModel, setPaginationModel] = useState({
+        page: 0,
+        pageSize: 10,
+      });
     const navigate = useNavigate()
     const [rows, setRows] = useState<EquipamientoDataGridColumns[]>([])
     const [selectedEquipoId, setSelectedEquipoId] = useState("");
     const [showForm, setShowForm] = useState(false);
-  
+    const [showOnlyValid, setShowOnlyValid] = useState<boolean>(false);  
+    
     useEffect(() => {
+        setIsLoading(true);
         //Pide al back saber si es un usuario especial para habilitar funciones
         isAdminOSuperusu(user).then(function(isEspecial) {
             if (isEspecial) {
@@ -56,7 +64,9 @@ export const InvVerEquiposComponent = () => {
         const funcCookie = Cookies.get('funcionalidades');
         setFuncionalidades(funcCookie?funcCookie:"");
         //Ahora consulta los equipos
-        const response = getEquipamientoProvinciaActivaPaging(user, page, rowsPerPage)
+        const response = showOnlyValid
+            ? getEquipamientoValidoProvinciaActivaPaging(user, page, rowsPerPage)
+            : getEquipamientoProvinciaActivaPaging(user, page, rowsPerPage)
         response.then((response: Page<EquipamientoDto>) => {
         setRows(
             response?.data.map(
@@ -76,7 +86,7 @@ export const InvVerEquiposComponent = () => {
         setIsLoading(false)
         })
         return () => setIsLoading(true)
-    }, [user, page, rowsPerPage]);
+    }, [user, page, rowsPerPage, showOnlyValid]);
 
     const columns: GridColDef[] = [
         { field: "observaciones", headerName: "Observaciones", flex: 1, minWidth: 175 },
@@ -120,6 +130,24 @@ export const InvVerEquiposComponent = () => {
                 <Typography variant="h2" gutterBottom>
                     Ver Equipos
                 </Typography>
+                {isAdmin && (
+                        <Tooltip 
+                          title={showOnlyValid ? "Mostrando solo equipos válidos" : "Mostrando todos los equipos"}
+                          arrow
+                        >
+                          <IconButton
+                            onClick={() => setShowOnlyValid(!showOnlyValid)}
+                            color="primary"
+                            sx={{ mb: 2 }}
+                          >
+                            {showOnlyValid ? (
+                              <DeleteIcon color="error" />
+                            ) : (
+                              <DeleteOutlineIcon />
+                            )}
+                          </IconButton>
+                        </Tooltip>
+                      )}
                 <DataGrid
                     initialState={{ pagination: { rowCount: -1}}}
                     columns={columns}
