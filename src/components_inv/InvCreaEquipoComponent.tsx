@@ -383,7 +383,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }) => {
         }}
         >
             <Typography variant="h2" gutterBottom>
-                Creación de un Equipo
+                Creación/Modificación de un Equipo
             </Typography>
             <Grid container spacing={2}>
               {/* Línea 1: Observaciones */}
@@ -501,7 +501,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }) => {
               <DatePicker
                 name="fentrega"
                 label="Fecha de entrega"
-                defaultValue={formData.fentrega ? DateTime.fromISO(formData.fentrega, "dd/MM/yyyy") : null}
+                defaultValue={formData.fentrega ? DateTime.fromISO(formData.fentrega) : null}
                 onChange={(date) => handleDateChange("fentrega", date)}
                 format="dd/MM/yyyy"
                 slotProps={{ textField: { fullWidth: true } }}
@@ -511,7 +511,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }) => {
               <DatePicker
                 name="fdevolucion"
                 label="Fecha de devolución"
-                defaultValue={formData.fdevolucion ? DateTime.fromISO(formData.fdevolucion, "dd/MM/yyyy") : null}
+                defaultValue={formData.fdevolucion ? DateTime.fromISO(formData.fdevolucion) : null}
                 onChange={(date) => handleDateChange("fdevolucion", date)}
                 format="dd/MM/yyyy"
                 slotProps={{ textField: { fullWidth: true } }}

@@ -3,7 +3,6 @@ import {useLocation, useNavigate} from "react-router-dom";
 import Cookies from 'js-cookie';
 //Componentes reutilizables, hooks, etc
 import { useAuth } from "../hooks/useAuth";
-import { InvCreaEquipoComponent } from "./InvCreaEquipoComponent.tsx";
 //Elementos de Material UI
 import { AppBar, Box, IconButton, Toolbar, Menu, MenuItem, ListItemText } from "@mui/material";
 import LogoutIcon from '@mui/icons-material/Logout';
