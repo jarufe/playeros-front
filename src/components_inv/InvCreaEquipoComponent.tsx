@@ -26,7 +26,12 @@ import {
   Typography,
 } from "@mui/material"
 
-export const InvCreaEquipoComponent = ({ id, onClose }) => {
+interface InvCreaEquipoComponentProps {
+  id?: string;
+  onClose?: () => void; //Prop opcional
+}
+
+export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentProps) => {
   const { user } = useAuth();
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -146,7 +151,13 @@ export const InvCreaEquipoComponent = ({ id, onClose }) => {
     });
   };
 
-  const handleCancel = () => void navigate("/inventario")
+  const handleClose = () => {
+    if (onClose) {
+      onClose(); //Si viene de InvVerEquiposComponent
+    } else {
+      navigate('/inventario'); //Fallback por defecto
+    }
+  }
 
   const handleSubmit = async (e) => {
       e.preventDefault();
@@ -183,7 +194,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }) => {
                       estado: equEstados.length > 0 ? equEstados[0].descr : "",
                       valido: true,
                   });
-                  onClose(); // Cerrar el formulario después de guardar
+                  //handleClose(); // Cerrar el formulario después de guardar
                 } else {
                   alert("Hubo un error al guardar el equipamiento");
               }
@@ -532,7 +543,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }) => {
             <p>&nbsp;</p>
             <Grid container spacing={2}>
               <Grid item xs={12} md={12} lg={12}>
-                <Button onClick={onClose} variant="contained">Cancelar</Button>
+                <Button onClick={handleClose} variant="contained">Cancelar</Button>
                 &nbsp;
                 <Button type="submit" variant="contained">Guardar</Button>
               </Grid>

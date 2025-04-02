@@ -45,9 +45,11 @@ export const InvHeader = () => {
   const handleCloseView = () => {
     setAnchorView(null);
   };
-
   const handleLogout = () => {
     logout();
+  };
+  const handleCreateEquipment = () => {
+    navigate('/inv/creaequipo');
   };
 
   //Función para saber si una funcionalidad está dentro de la lista de funcionalidades del usuario
@@ -133,9 +135,7 @@ export const InvHeader = () => {
             { verFuncionalidad('/inv/creaequipo<JARUTAG>') ? 
               <MenuItem>
               <ListItemText
-                onClick={() => 
-                  { navigate('/inv/creaequipo') }
-                }
+                onClick={handleCreateEquipment}
               >
                 Crear Equipo
               </ListItemText>
