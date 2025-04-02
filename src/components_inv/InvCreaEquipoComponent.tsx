@@ -4,28 +4,27 @@ import { useNavigate } from "react-router-dom"
 import { useAuth } from "../hooks/useAuth.jsx";
 import { getEquipo, addEquipo, getTipos, getEstados } from '../services/apiEquipamientoService.ts';
 import { getUsuariosBasicosProvinciaActiva } from '../services/apiUsuarioService.ts';
-import { EquipamientoDto, useRequiredParams, BasicoDto } from "../shared/EntityTypes.ts"
+import { EquipamientoDto, BasicoDto } from "../shared/EntityTypes.ts"
 import { ComprobandoComponent } from "../components/ComprobandoComponent.tsx"
+import { CheckedIcon, UnCheckedIcon } from '../shared/renderizado.tsx';
 //Elementos de Material UI
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { DateTime } from "luxon";
 import {
-  Box,
   Container,
-  FormControl,
   FormControlLabel,
   InputLabel,
   Select,
   MenuItem,
   TextField,
   Grid,
-  Autocomplete,
   TextFieldProps,
   Checkbox,
   Button,
   Typography,
 } from "@mui/material"
 
+//Definición de las propiedades que se le pueden pasar al componente
 interface InvCreaEquipoComponentProps {
   id?: string;
   onClose?: () => void; //Prop opcional
@@ -151,6 +150,8 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
     });
   };
 
+  //Si viene desde el componente InvVerEquiposComponent, se ejecuta su función de cerrado
+  //En caso contrario, se navega a la página principal del módulo
   const handleClose = () => {
     if (onClose) {
       onClose(); //Si viene de InvVerEquiposComponent
@@ -506,46 +507,57 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                   ))}
                 </Select>
               </Grid>
-            </Grid>
-            {/* Línea 4: Fechas */}
-            <Grid item xs={12} md={3} lg={3}>
-              <DatePicker
-                name="fentrega"
-                label="Fecha de entrega"
-                defaultValue={formData.fentrega ? DateTime.fromISO(formData.fentrega) : null}
-                onChange={(date) => handleDateChange("fentrega", date)}
-                format="dd/MM/yyyy"
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </Grid>
-            <Grid item xs={12} md={3} lg={3}>
-              <DatePicker
-                name="fdevolucion"
-                label="Fecha de devolución"
-                defaultValue={formData.fdevolucion ? DateTime.fromISO(formData.fdevolucion) : null}
-                onChange={(date) => handleDateChange("fdevolucion", date)}
-                format="dd/MM/yyyy"
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6} lg={6}>
-              &nbsp;
-            </Grid>
-            {/* Campos condicionales */}
-            {formData.tipo && (
-              <Grid item xs={12}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Detalles específicos
-                </Typography>
-                {renderConditionalFields()}
+              {/* Línea 4: Fechas */}
+              <Grid item xs={12} md={4} lg={4}>
+                <DatePicker
+                  name="fentrega"
+                  label="Fecha de entrega"
+                  defaultValue={formData.fentrega ? DateTime.fromISO(formData.fentrega) : null}
+                  onChange={(date) => handleDateChange("fentrega", date)}
+                  format="dd/MM/yyyy"
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
               </Grid>
-            )}
+              <Grid item xs={12} md={4} lg={4}>
+                <DatePicker
+                  name="fdevolucion"
+                  label="Fecha de devolución"
+                  defaultValue={formData.fdevolucion ? DateTime.fromISO(formData.fdevolucion) : null}
+                  onChange={(date) => handleDateChange("fdevolucion", date)}
+                  format="dd/MM/yyyy"
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+              </Grid>
+              {/* Campos condicionales */}
+              {formData.tipo && (
+                <Grid item xs={12} md={12} lg={12}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Detalles específicos
+                  </Typography>
+                  {renderConditionalFields()}
+                </Grid>
+              )}
+            </Grid>
             <p>&nbsp;</p>
             <Grid container spacing={2}>
-              <Grid item xs={12} md={12} lg={12}>
+              <Grid item xs={12} md={4} lg={4}>
                 <Button onClick={handleClose} variant="contained">Cancelar</Button>
                 &nbsp;
                 <Button type="submit" variant="contained">Guardar</Button>
+              </Grid>
+              <Grid item xs={12} md={8} lg={8}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="valido"
+                      checked={formData.valido}
+                      onChange={handleChange}
+                      icon={<UnCheckedIcon />}
+                      checkedIcon={<CheckedIcon />}
+                    />
+                  }
+                  label="Válido"
+                />
               </Grid>
             </Grid>
         </Container>
