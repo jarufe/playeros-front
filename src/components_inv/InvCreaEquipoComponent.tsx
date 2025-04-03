@@ -63,7 +63,6 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
     estado: "",
     valido: true,
   });
-  const [equ, setEqu] = useState<EquipamientoDto>();
   const [equTipos, setEquTipos] = useState<BasicoDto[]>([]);
   const [equEstados, setEquEstados] = useState<BasicoDto[]>([]);
   const [usuarios, setUsuarios] = useState<BasicoDto[]>([]);
@@ -189,13 +188,12 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
     }
   }
 
-  const handleSubmit = async (e) => {
-      e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+      event.preventDefault();
       try {
         let esNuevo = (formData.id==''?true:false);
-        setEqu(formData);
-        if (equ) {
-          const response = await addEquipo(user, equ);
+        if (formData) {
+          const response = await addEquipo(user, formData);
               if (response) {
                   alert("Equipamiento guardado correctamente");            
                   //Si estamos en creación (el id era vacío), limpiamos los datos de los campos para poder seguir creando
@@ -589,7 +587,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
             <p>&nbsp;</p>
             <Grid container spacing={2}>
               <Grid item xs={12} md={4} lg={4}>
-                <Button onClick={handleClose} variant="contained">Cancelar</Button>
+                <Button onClick={handleClose} variant="contained">Cerrar</Button>
                 &nbsp;
                 <Button type="submit" variant="contained">Guardar</Button>
               </Grid>

@@ -43,9 +43,7 @@ export const InvVerEquiposComponent = () => {
     //Comprobación del estado de carga de los datos para esperar a renderizar información
     const [isLoading, setIsLoading] = useState<boolean>(true)
     //Datos relacionados con la gestión del DataGrid: filas por cada página, número total de filas de la consulta y número de página actual
-    const [rowsPerPage, setRowsPerPage] = useState<number>(5)
     const [totalRows, setTotalRows] = useState<number>(0)
-    const [page, setPage] = useState<number>(0)
     //Estructura de datos que alimenta a las filas del DataGrid
     const [rows, setRows] = useState<EquipamientoDataGridColumns[]>([])
     //Misma estructura de datos pero para filtrar según lo escrito en un cuadro de texto de búsqueda
@@ -54,9 +52,66 @@ export const InvVerEquiposComponent = () => {
     const [selectedEquipoId, setSelectedEquipoId] = useState("");
     //Variables para gestionar el renderizado de más información y la realización de filtrado por registros válidos o no válidos
     const [showForm, setShowForm] = useState(false);
-    const [showOnlyValid, setShowOnlyValid] = useState<boolean>(false);  
-    const [searchText, setSearchText] = useState<string>('');
-    
+
+    //Definición de filtros aplicables, con una interfaz para el tipado fuerte y la variable de estado
+    interface Filters {
+        showOnlyValid: boolean;
+        searchText: string;
+        pagination: {
+            page: number;
+            pageSize: number;
+        };
+    }
+    const [filters, setFilters] = useState<Filters>({
+        showOnlyValid: false,
+        searchText: '',
+        pagination: { page: 0, pageSize: 5 }
+    });
+
+     // Función única para cargar datos (reutilizable)
+    const loadEquipos = async () => {
+        try {
+            //Ahora consulta los equipos, leyendo todos o solo los válidos según el estado de un elemento en el formulario
+            const response = filters.showOnlyValid
+                ? getEquipamientoValidoProvinciaActivaPaging(user, filters.pagination.page, filters.pagination.pageSize)
+                : getEquipamientoProvinciaActivaPaging(user, filters.pagination.page, filters.pagination.pageSize)
+            response.then((response: Page<EquipamientoDto>) => {
+                //Establece las filas de datos para el DataGrid a partir del resultado de la consulta
+                setRows(
+                    response?.data.map(
+                    (equ: EquipamientoDto): EquipamientoDataGridColumns => ({
+                        id: equ.id,
+                        observaciones: equ.observaciones,
+                        fentrega: equ.fentrega,
+                        marca: equ.marca,
+                        modelo: equ.modelo,
+                        nserie: equ.nserie,
+                        estado: equ.estado,
+                        valido: equ.valido,
+                    }),
+                    ),
+                );
+                //Establece la subestructura de filtrado de datos, aplicando los filtros correspondientes
+                setFilteredEquipos(
+                    filters.searchText 
+                    ? applyLocalFilters(response.data, filters.searchText) 
+                    : response.data
+                );
+                setTotalRows(response.total>0?response.total:0)
+            });
+        } catch (error) {
+        console.error("Error cargando equipos:", error);
+        }
+    };
+    // Filtrado local (para el buscador)
+    const applyLocalFilters = (data: any[], searchText: string) => {
+        return data.filter(equipo => 
+        Object.values(equipo).some(
+            val => val?.toString().toLowerCase().includes(searchText.toLowerCase())
+        )
+        );
+    };    
+
     //Comprobación de permisos y carga de datos para mostrar en la página
     useEffect(() => {
         setIsLoading(true);
@@ -71,63 +126,22 @@ export const InvVerEquiposComponent = () => {
         //Lee la cookie de funcionalidades para poder inspeccionar valores
         const funcCookie = Cookies.get('funcionalidades');
         setFuncionalidades(funcCookie?funcCookie:"");
-        //Ahora consulta los equipos, leyendo todos o solo los válidos según el estado de un elemento en el formulario
-        const response = showOnlyValid
-            ? getEquipamientoValidoProvinciaActivaPaging(user, page, rowsPerPage)
-            : getEquipamientoProvinciaActivaPaging(user, page, rowsPerPage)
-        response.then((response: Page<EquipamientoDto>) => {
-        //Establece las filas de datos para el DataGrid a partir del resultado de la consulta
-        setRows(
-            response?.data.map(
-            (equ: EquipamientoDto): EquipamientoDataGridColumns => ({
-                id: equ.id,
-                observaciones: equ.observaciones,
-                fentrega: equ.fentrega,
-                marca: equ.marca,
-                modelo: equ.modelo,
-                nserie: equ.nserie,
-                estado: equ.estado,
-                valido: equ.valido,
-            }),
-            ),
-        )
-        // Idem que el anterior, para inicializar los datos filtrados
-        setFilteredEquipos(
-            response?.data.map(
-            (equ: EquipamientoDto): EquipamientoDataGridColumns => ({
-                id: equ.id,
-                observaciones: equ.observaciones,
-                fentrega: equ.fentrega,
-                marca: equ.marca,
-                modelo: equ.modelo,
-                nserie: equ.nserie,
-                estado: equ.estado,
-                valido: equ.valido,
-            }),
-            ),
-        )
-        setTotalRows(response.total>0?response.total:0)
+        //Carga la consulta
+        loadEquipos();
+
         setIsLoading(false)
-        })
         return () => setIsLoading(true)
-    }, [user, page, rowsPerPage, showOnlyValid]);
+    }, [user, filters.showOnlyValid, filters.pagination]);
 
-    // Filtrado local
+    // Efecto para filtrado local (no requiere llamar a API)
     useEffect(() => {
-        if (searchText.trim() === '') {
-            setFilteredEquipos(rows);
+        if (filters.searchText) {
+        setFilteredEquipos(applyLocalFilters(rows, filters.searchText));
         } else {
-        const filtered = rows.filter((equipo) =>
-            Object.values(equipo).some(
-            (value) =>
-                value &&
-                value.toString().toLowerCase().includes(searchText.toLowerCase())
-            )
-        );
-        setFilteredEquipos(filtered);
+        setFilteredEquipos(rows);
         }
-    }, [searchText, rows]);
-
+    }, [filters.searchText, rows]);
+    
     //Definición de las columnas del DataGrid
     //La columna boolean llamada 'valido' se renderiza con un icono verde o rojo según que el registro sea válido o no
     const columns: GridColDef[] = [
@@ -160,8 +174,7 @@ export const InvVerEquiposComponent = () => {
     // Cerrar formulario y actualizar lista
     const handleFormClose = () => {
         setShowForm(false);
-        // Recargar lista después de guardar
-        //axios.get("getEquipos").then((res) => setEquipos(res.data));
+        loadEquipos(); // ¡Refrescamos los datos manteniendo los filtros actuales!
     };
 
     //Función para saber si una funcionalidad está dentro de la lista de funcionalidades del usuario
@@ -186,14 +199,19 @@ export const InvVerEquiposComponent = () => {
                             <Typography variant="body1">Filtro:</Typography>
                             {/* Botón de papelera */}
                             <Tooltip 
-                                title={showOnlyValid ? "Mostrando solo equipos válidos" : "Mostrando todos los equipos"}
+                                title={filters.showOnlyValid ? "Mostrando solo equipos válidos" : "Mostrando todos los equipos"}
                                 arrow
                             >
                                 <IconButton
-                                onClick={() => setShowOnlyValid(!showOnlyValid)}
+                                onClick={() => 
+                                    setFilters(prev => ({
+                                        ...prev,
+                                        showOnlyValid: !prev.showOnlyValid
+                                    }))
+                                }
                                 color="primary"
                                 >
-                                {showOnlyValid ? (
+                                {filters.showOnlyValid ? (
                                     <DeleteIcon color="error" />
                                 ) : (
                                     <DeleteOutlineIcon />
@@ -206,8 +224,13 @@ export const InvVerEquiposComponent = () => {
                                 label="Buscar en resultados"
                                 variant="outlined"
                                 size="small"
-                                value={searchText}
-                                onChange={(e) => setSearchText(e.target.value)}
+                                value={filters.searchText}
+                                onChange={(e) => 
+                                    setFilters(prev => ({
+                                        ...prev,
+                                        searchText: e.target.value
+                                    }))
+                                }
                                 sx={{ flexGrow: 1, maxWidth: 400 }}
                             />
                             </Box>
@@ -220,12 +243,14 @@ export const InvVerEquiposComponent = () => {
                             rows={filteredEquipos}
                             rowCount={totalRows}
                             paginationMode={"server"}
-                            paginationModel={{ page: page, pageSize: rowsPerPage }}
+                            paginationModel={filters.pagination}
                             pageSizeOptions={[5, 10, 25]}
-                            onPaginationModelChange={(model) => {
-                                setPage(model.page)
-                                setRowsPerPage(model.pageSize)
-                            }}
+                            onPaginationModelChange={(model) => 
+                                setFilters(prev => ({
+                                    ...prev,
+                                    pagination: model
+                                }))
+                            }
                             onRowClick={handleClick}
                         />
                         {/* Botón de añadir (solo para admin) */}
