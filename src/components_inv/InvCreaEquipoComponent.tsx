@@ -195,33 +195,6 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
         let esNuevo = (formData.id==''?true:false);
         setEqu(formData);
         if (equ) {
-console.log('nuevo: ' + esNuevo);
-console.log('id: ' + equ.id);
-console.log('provinciaId: ' + equ.provinciaId);
-console.log('usuarioId: ' + equ.usuarioId);
-console.log('observaciones: ' + equ.observaciones);
-console.log('fentrega: ' + equ.fentrega);
-console.log('fdevolucion: ' + equ.fdevolucion);
-console.log('marca: ' + equ.marca);
-console.log('modelo: ' + equ.modelo);
-console.log('nserie: ' + equ.nserie);
-console.log('nlargo: ' + equ.nlargo);
-console.log('ncorto: ' + equ.ncorto);
-console.log('imei: ' + equ.imei);
-console.log('icc: ' + equ.icc);
-console.log('pin: ' + equ.pin);
-console.log('puk: ' + equ.puk);
-console.log('datos: ' + equ.datos);
-console.log('voz: ' + equ.voz);
-console.log('cargador: ' + equ.cargador);
-console.log('raton: ' + equ.raton);
-console.log('maletin: ' + equ.maletin);
-console.log('auriculares: ' + equ.auriculares);
-console.log('idmId: ' + equ.idmId);
-console.log('tipo: ' + equ.tipo);
-console.log('estado: ' + equ.estado);
-console.log('valido: ' + equ.valido);
-/*          
           const response = await addEquipo(user, equ);
               if (response) {
                   alert("Equipamiento guardado correctamente");            
@@ -259,7 +232,6 @@ console.log('valido: ' + equ.valido);
                 } else {
                   alert("Hubo un error al guardar el equipamiento");
               }
-*/          
         }
       } catch (error) {
         console.error("Error al guardar el equipamiento", error);
