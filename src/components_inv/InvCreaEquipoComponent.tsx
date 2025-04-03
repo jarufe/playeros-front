@@ -22,6 +22,7 @@ import {
   Checkbox,
   Button,
   Typography,
+  SelectChangeEvent,
 } from "@mui/material"
 
 //Definición de las propiedades que se le pueden pasar al componente
@@ -134,12 +135,23 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
     }
   }, [user, id]);
   
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({ 
-      ...formData, 
+  // Manejador para todos los campos excepto las fechas y las listas desplegables
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = event.target;
+    setFormData(prevState => ({ 
+      ...prevState, 
       [name]: type === "checkbox" ? checked : value,
-    });
+    }));
+  };
+
+  // Manejador para las listas desplegables
+  const handleSelectChange = (event: SelectChangeEvent<string>) => {
+    const { name, value } = event.target;
+    setFormData(prevState => ({ 
+      ...prevState, 
+      [name as string]: value,
+      nserie: name === 'tipo' ? '' : prevState.nserie
+    }));
   };
 
   // Manejador para fechas
@@ -163,49 +175,91 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
   const handleSubmit = async (e) => {
       e.preventDefault();
       try {
+        let esNuevo = (formData.id==''?true:false);
         setEqu(formData);
         if (equ) {
+console.log('nuevo: ' + esNuevo);
+console.log('id: ' + equ.id);
+console.log('provinciaId: ' + equ.provinciaId);
+console.log('usuarioId: ' + equ.usuarioId);
+console.log('observaciones: ' + equ.observaciones);
+console.log('fentrega: ' + equ.fentrega);
+console.log('fdevolucion: ' + equ.fdevolucion);
+console.log('marca: ' + equ.marca);
+console.log('modelo: ' + equ.modelo);
+console.log('nserie: ' + equ.nserie);
+console.log('nlargo: ' + equ.nlargo);
+console.log('ncorto: ' + equ.ncorto);
+console.log('imei: ' + equ.imei);
+console.log('icc: ' + equ.icc);
+console.log('pin: ' + equ.pin);
+console.log('puk: ' + equ.puk);
+console.log('datos: ' + equ.datos);
+console.log('voz: ' + equ.voz);
+console.log('cargador: ' + equ.cargador);
+console.log('raton: ' + equ.raton);
+console.log('maletin: ' + equ.maletin);
+console.log('auriculares: ' + equ.auriculares);
+console.log('idmId: ' + equ.idmId);
+console.log('tipo: ' + equ.tipo);
+console.log('estado: ' + equ.estado);
+console.log('valido: ' + equ.valido);
+/*          
           const response = await addEquipo(user, equ);
               if (response) {
                   alert("Equipamiento guardado correctamente");            
-                  setFormData({
-                      id: "",
-                      provinciaId: "",
-                      usuarioId: usuarios.length > 0 ? usuarios[0].id : "",
-                      observaciones: "",
-                      fentrega: "",
-                      fdevolucion: "",
-                      marca: "",
-                      modelo: "",
-                      nserie: "",
-                      nlargo: "",
-                      ncorto: "",
-                      imei: "",
-                      icc: "",
-                      pin: "",
-                      puk: "",
-                      datos: false,
-                      voz: false,
-                      cargador: false,
-                      raton: false,
-                      maletin: false,
-                      auriculares: false,
-                      idmId: "",
-                      tipo: equTipos.length > 0 ? equTipos[0].descr : "",
-                      estado: equEstados.length > 0 ? equEstados[0].descr : "",
-                      valido: true,
-                  });
+                  //Si estamos en creación (el id era vacío), limpiamos los datos de los campos para poder seguir creando
+                  if (esNuevo) {
+                    setFormData({
+                        id: "",
+                        provinciaId: "",
+                        usuarioId: usuarios.length > 0 ? usuarios[0].id : "",
+                        observaciones: "",
+                        fentrega: "",
+                        fdevolucion: "",
+                        marca: "",
+                        modelo: "",
+                        nserie: "",
+                        nlargo: "",
+                        ncorto: "",
+                        imei: "",
+                        icc: "",
+                        pin: "",
+                        puk: "",
+                        datos: false,
+                        voz: false,
+                        cargador: false,
+                        raton: false,
+                        maletin: false,
+                        auriculares: false,
+                        idmId: "",
+                        tipo: equTipos.length > 0 ? equTipos[0].descr : "",
+                        estado: equEstados.length > 0 ? equEstados[0].descr : "",
+                        valido: true,
+                    });
+                  }
                   //handleClose(); // Cerrar el formulario después de guardar
                 } else {
                   alert("Hubo un error al guardar el equipamiento");
               }
-          }
+*/          
+        }
       } catch (error) {
         console.error("Error al guardar el equipamiento", error);
         alert("Hubo un error al guardar el equipamiento");
       }
     };
-       
+
+  //En el renderizado de detalles específicos, muestra una cabecera
+  const cabeceraDetalles = () => {
+    return (
+      <Grid item xs={12} md={12} lg={12}>
+        <Typography variant="subtitle1" gutterBottom>
+          Detalles específicos
+        </Typography>
+      </Grid>
+    );
+  };
   // Renderizar campos condicionales
   const renderConditionalFields = () => {
     switch (formData.tipo) {
@@ -213,7 +267,9 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
       case "Modem USB":
           return (
           <Grid container spacing={2}>
-            <Grid item xs={3}>
+            {cabeceraDetalles()}
+            <Grid item xs={12} md={3} lg={3}>
+              &nbsp;
               <TextField
                 fullWidth
                 label="IMEI"
@@ -227,7 +283,8 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
       case "Teléfono fijo":
         return (
           <Grid container spacing={2}>
-            <Grid item xs={3}>
+            {cabeceraDetalles()}
+            <Grid item xs={12} md={3} lg={3}>
               <TextField
                 fullWidth
                 label="Número Largo"
@@ -236,7 +293,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={12} md={3} lg={3}>
               <TextField
                 fullWidth
                 label="Número Corto"
@@ -250,7 +307,8 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
       case "Tarjeta SIM":
         return (
           <Grid container spacing={2}>
-            <Grid item xs={4}>
+            {cabeceraDetalles()}
+            <Grid item xs={12} md={4} lg={4}>
               <TextField
                 fullWidth
                 label="Número Largo"
@@ -259,7 +317,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={12} md={4} lg={4}>
               <TextField
                 fullWidth
                 label="Número Corto"
@@ -268,7 +326,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={12} md={4} lg={4}>
               <TextField
                 fullWidth
                 label="ICC"
@@ -277,7 +335,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={12} md={3} lg={3}>
               <TextField
                 fullWidth
                 label="PIN"
@@ -286,7 +344,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={12} md={3} lg={3}>
               <TextField
                 fullWidth
                 label="PUK"
@@ -295,7 +353,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={12} md={3} lg={3}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -307,7 +365,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                 label="Datos"
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={12} md={3} lg={3}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -326,7 +384,8 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
       case "Ordenador de sobremesa":
           return (
           <Grid container spacing={2}>
-            <Grid item xs={3}>
+            {cabeceraDetalles()}
+            <Grid item xs={12} md={3} lg={3}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -338,7 +397,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                 label="Ratón"
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={12} md={3} lg={3}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -350,7 +409,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                 label="Auriculares"
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={12} md={3} lg={3}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -362,7 +421,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                 label="Cargador"
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={12} md={3} lg={3}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -377,7 +436,10 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
           </Grid>
         );
       default:
-        return null;
+        return (
+          <Grid container spacing={2}>
+          </Grid>
+        );
     }
   };
 
@@ -468,7 +530,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                   name="tipo" 
                   label="Tipo"
                   value={formData.tipo} 
-                  onChange={handleChange}
+                  onChange={handleSelectChange}
                 >
                   {equTipos.map((type) => (
                   <MenuItem key={type.id} value={type.descr}>{type.descr}</MenuItem>
@@ -484,7 +546,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                   name="estado" 
                   label="Estado"
                   value={formData.estado} 
-                  onChange={handleChange}
+                  onChange={handleSelectChange}
                 >
                   {equEstados.map((type) => (
                   <MenuItem key={type.id} value={type.descr}>{type.descr}</MenuItem>
@@ -500,7 +562,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
                   name="usuarioId" 
                   label="Usuario"
                   value={formData.usuarioId} 
-                  onChange={handleChange}
+                  onChange={handleSelectChange}
                 >
                   {usuarios.map((type) => (
                   <MenuItem key={type.id} value={type.id}>{type.descr}</MenuItem>
@@ -531,9 +593,6 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
               {/* Campos condicionales */}
               {formData.tipo && (
                 <Grid item xs={12} md={12} lg={12}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Detalles específicos
-                  </Typography>
                   {renderConditionalFields()}
                 </Grid>
               )}
