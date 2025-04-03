@@ -138,8 +138,8 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
   // Manejador para todos los campos excepto las fechas y las listas desplegables
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = event.target;
-    setFormData(prevState => ({ 
-      ...prevState, 
+    setFormData(prev => ({ 
+      ...prev, 
       [name]: type === "checkbox" ? checked : value,
     }));
   };
@@ -147,11 +147,28 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
   // Manejador para las listas desplegables
   const handleSelectChange = (event: SelectChangeEvent<string>) => {
     const { name, value } = event.target;
-    setFormData(prevState => ({ 
-      ...prevState, 
-      [name as string]: value,
-      nserie: name === 'tipo' ? '' : prevState.nserie
-    }));
+    setFormData(prev => { 
+      const newData = {
+        ...prev,
+        [name as string]: value
+      };
+      //Vaciar los campos dependientes del tipo de equipo cuando se cambia el tipo
+      if (name === 'tipo') {
+        newData.nlargo = '';
+        newData.ncorto = '';
+        newData.imei = '';
+        newData.icc = '';
+        newData.pin = '';
+        newData.puk = '';
+        newData.datos = false;
+        newData.voz = false;
+        newData.cargador = false;
+        newData.raton = false;
+        newData.maletin = false;
+        newData.auriculares = false;        
+      }
+      return newData;
+    });
   };
 
   // Manejador para fechas
@@ -469,7 +486,7 @@ console.log('valido: ' + equ.valido);
                   required
                   label="Descripción"
                   {...style_props}
-                  defaultValue={formData.observaciones ? formData.observaciones : ""}
+                  value={formData.observaciones ? formData.observaciones : ""}
                   onChange={handleChange}
                 />
               </Grid>
@@ -482,7 +499,7 @@ console.log('valido: ' + equ.valido);
                   required
                   label="Marca"
                   {...style_props}
-                  defaultValue={formData.marca ? formData.marca : ""}
+                  value={formData.marca ? formData.marca : ""}
                   onChange={handleChange}
                 />
               </Grid>
@@ -494,7 +511,7 @@ console.log('valido: ' + equ.valido);
                   required
                   label="Modelo"
                   {...style_props}
-                  defaultValue={formData.modelo ? formData.modelo : ""}
+                  value={formData.modelo ? formData.modelo : ""}
                   onChange={handleChange}
                 />
               </Grid>
@@ -505,7 +522,7 @@ console.log('valido: ' + equ.valido);
                   name="nserie"
                   label="n/s"
                   {...style_props}
-                  defaultValue={formData.nserie ? formData.nserie : ""}
+                  value={formData.nserie ? formData.nserie : ""}
                   onChange={handleChange}
                 />
               </Grid>
@@ -516,7 +533,7 @@ console.log('valido: ' + equ.valido);
                   name="idmId"
                   label="Id de IDM"
                   {...style_props}
-                  defaultValue={formData.idmId ? formData.idmId : ""}
+                  value={formData.idmId ? formData.idmId : ""}
                   onChange={handleChange}
                 />
               </Grid>
@@ -574,7 +591,7 @@ console.log('valido: ' + equ.valido);
                 <DatePicker
                   name="fentrega"
                   label="Fecha de entrega"
-                  defaultValue={formData.fentrega ? DateTime.fromISO(formData.fentrega) : null}
+                  value={formData.fentrega ? DateTime.fromISO(formData.fentrega) : null}
                   onChange={(date) => handleDateChange("fentrega", date)}
                   format="dd/MM/yyyy"
                   slotProps={{ textField: { fullWidth: true } }}
@@ -584,7 +601,7 @@ console.log('valido: ' + equ.valido);
                 <DatePicker
                   name="fdevolucion"
                   label="Fecha de devolución"
-                  defaultValue={formData.fdevolucion ? DateTime.fromISO(formData.fdevolucion) : null}
+                  value={formData.fdevolucion ? DateTime.fromISO(formData.fdevolucion) : null}
                   onChange={(date) => handleDateChange("fdevolucion", date)}
                   format="dd/MM/yyyy"
                   slotProps={{ textField: { fullWidth: true } }}
