@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom"
 //Componentes reutilizables, hooks, etc
 import { useAuth } from "../hooks/useAuth.jsx";
-import { getEquipo, addEquipo, getTipos, getEstados } from '../services/apiEquipamientoService.ts';
+import { getEquipo, addUpdateEquipo, getTipos, getEstados } from '../services/apiEquipamientoService.ts';
 import { getUsuariosBasicosProvinciaActiva } from '../services/apiUsuarioService.ts';
 import { EquipamientoDto, BasicoDto } from "../shared/EntityTypes.ts"
 import { ComprobandoComponent } from "../components/ComprobandoComponent.tsx"
@@ -193,7 +193,7 @@ export const InvCreaEquipoComponent = ({ id, onClose }: InvCreaEquipoComponentPr
       try {
         let esNuevo = (formData.id==''?true:false);
         if (formData) {
-          const response = await addEquipo(user, formData);
+          const response = await addUpdateEquipo(user, formData);
               if (response) {
                   alert("Equipamiento guardado correctamente");            
                   //Si estamos en creación (el id era vacío), limpiamos los datos de los campos para poder seguir creando

@@ -147,10 +147,10 @@ export const getEquipamientoValidoProvinciaActivaPaging = async (token: string, 
     }
 };
 
-export const addEquipo = async (token: string, equ: EquipamientoDto) => {
+export const addUpdateEquipo = async (token: string, equ: EquipamientoDto) => {
     try {
         axios.defaults.withCredentials = true;
-        const response = await axios.post<EquipamientoDto>(`${API_URL}/equipamiento/addequipo`, equ, 
+        const response = await axios.post<EquipamientoDto>(`${API_URL}/equipamiento/addupdateequipo`, equ, 
             {
             headers: {
             'Authorization':'Bearer '+ token,

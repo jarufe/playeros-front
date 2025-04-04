@@ -136,9 +136,9 @@ export const InvVerEquiposComponent = () => {
     // Efecto para filtrado local (no requiere llamar a API)
     useEffect(() => {
         if (filters.searchText) {
-        setFilteredEquipos(applyLocalFilters(rows, filters.searchText));
+            setFilteredEquipos(applyLocalFilters(rows, filters.searchText));
         } else {
-        setFilteredEquipos(rows);
+            setFilteredEquipos(rows);
         }
     }, [filters.searchText, rows]);
     
@@ -237,14 +237,20 @@ export const InvVerEquiposComponent = () => {
                         )}
                         {/* Tabla de datos consultados de la BD o filtrados desde el cuadro de texto de búsqueda */}
                         <DataGrid 
-                            initialState={{ pagination: { rowCount: -1}}}
-                            columns={columns}
-                            loading={isLoading}
                             rows={filteredEquipos}
-                            rowCount={totalRows}
-                            paginationMode={"server"}
+                            columns={columns}
+                            rowCount={filteredEquipos.length}
+                            paginationMode={"client"}
+                            pageSizeOptions={[5, 25, 100]}
+                            initialState={{ 
+                                pagination: { 
+                                    paginationModel: {
+                                        pageSize: 5,
+                                    },
+                                },
+                            }}
+                            loading={isLoading}
                             paginationModel={filters.pagination}
-                            pageSizeOptions={[5, 10, 25]}
                             onPaginationModelChange={(model) => 
                                 setFilters(prev => ({
                                     ...prev,
