@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 //Componentes reutilizables, hooks, etc
-import { useAuth } from "../hooks/useAuth";
-import { getEquipamientoProvinciaActiva, getEquipamientoValidoProvinciaActiva } from '../services/apiEquipamientoService.ts';
-import { EquipamientoDto } from "../shared/EntityTypes.ts"
+import { useAuth } from "../hooks/useAuth.jsx";
+import { getEquipamientoProvinciaActivaPaging, getEquipamientoValidoProvinciaActivaPaging } from '../services/apiEquipamientoService.ts';
+import { Page, EquipamientoDto } from "../shared/EntityTypes.ts"
 import { InvCreaEquipoComponent } from "./InvCreaEquipoComponent.tsx";
 import { InvDetalleEquipoComponent } from "./InvDetalleEquipoComponent.tsx";
 import { isAdminOSuperusu } from '../services/apiUsuarioService.ts';
@@ -35,17 +35,18 @@ interface EquipamientoDataGridColumns {
     valido: boolean
 }
 
-//Este componente realiza una consulta completa a la BD, que devuelve todos los registros, de manera que la paginación es completamente en el cliente
-//Hay otro componente con nombre similar pero indicativo de que la paginación es en el servidor
+//Este componente realiza una consulta con paginación a la BD. Es la BD la que devuelve el subconjunto correcto para la página a mostrar
+//Hay otro componente con nombre similar pero sin indicativo de que la paginación es en el servidor
 //Usar uno u otro según que la tabla vaya a contener un elevado número de resultados o no
-export const InvVerEquiposComponent = () => {
+export const InvVerEquiposPaginacionServidorComponent = () => {
     //Variables relacionadas con la autenticación de usuario y comprobación de permisos
     const { user } = useAuth();
     const [isAdmin, setIsAdmin] = useState(false);
     const [funcionalidades, setFuncionalidades] = useState("");
     //Comprobación del estado de carga de los datos para esperar a renderizar información
     const [isLoading, setIsLoading] = useState<boolean>(true)
-    //Datos relacionados con la gestión del DataGrid: número de registros filtrados por haber introducido texto de búsqueda
+    //Datos relacionados con la gestión del DataGrid: filas por cada página, número total de filas de la consulta y número de página actual
+    const [totalRows, setTotalRows] = useState<number>(0)
     const [totalFilteredRows, setTotalFilteredRows] = useState<number>(0)
     //Estructura de datos que alimenta a las filas del DataGrid
     const [rows, setRows] = useState<EquipamientoDataGridColumns[]>([])
@@ -74,14 +75,14 @@ export const InvVerEquiposComponent = () => {
      // Función única para cargar datos (reutilizable)
     const loadRegistros = async () => {
         try {
-            //Ahora consulta los equipos, leyendo todos o solo los válidos según el estado de un elemento en el formulario
+            //Ahora consulta los registros, leyendo todos o solo los válidos según el estado de un elemento en el formulario
             const response = filters.showOnlyValid
-                ? getEquipamientoValidoProvinciaActiva(user)
-                : getEquipamientoProvinciaActiva(user)
-            response.then((response: EquipamientoDto[]) => {
+                ? getEquipamientoValidoProvinciaActivaPaging(user, filters.pagination.page, filters.pagination.pageSize)
+                : getEquipamientoProvinciaActivaPaging(user, filters.pagination.page, filters.pagination.pageSize)
+            response.then((response: Page<EquipamientoDto>) => {
                 //Establece las filas de datos para el DataGrid a partir del resultado de la consulta
                 setRows(
-                    response?.map(
+                    response?.data.map(
                     (equ: EquipamientoDto): EquipamientoDataGridColumns => ({
                         id: equ.id,
                         observaciones: equ.observaciones,
@@ -97,9 +98,10 @@ export const InvVerEquiposComponent = () => {
                 //Establece la subestructura de filtrado de datos, aplicando los filtros correspondientes
                 setFilteredRows(
                     filters.searchText 
-                    ? applyLocalFilters(response, filters.searchText) 
-                    : response
+                    ? applyLocalFilters(response.data, filters.searchText) 
+                    : response.data
                 );
+                setTotalRows(response.total>0?response.total:0)
                 setTotalFilteredRows(filteredRows.length>0?filteredRows.length:0)
             });
         } catch (error) {
@@ -144,7 +146,7 @@ export const InvVerEquiposComponent = () => {
             setFilteredRows(applyLocalFilters(rows, filters.searchText));
         } else {
             setFilteredRows(rows);
-            setTotalFilteredRows(rows.length>0?rows.length:0)
+            setTotalFilteredRows(totalRows>0?totalRows:0)
         }
     }, [filters.searchText, rows]);
     
@@ -242,26 +244,20 @@ export const InvVerEquiposComponent = () => {
                             {/* Contador de registros */}
                             {filters.searchText && (
                                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                    {`Mostrando ${totalFilteredRows} registro(s) filtrado(s)`}
+                                    {`Mostrando ${totalFilteredRows} registro(s) filtrado(s) en esta página`}
                                 </Typography>
                             )}
                             </Box>
                         )}
                         {/* Tabla de datos consultados de la BD o filtrados desde el cuadro de texto de búsqueda */}
                         <DataGrid 
-                            rows={filteredRows}
+                            initialState={{ pagination: { rowCount: -1}}}
                             columns={columns}
-                            rowCount={filteredRows.length}
-                            initialState={{ 
-                                pagination: { 
-                                    paginationModel: {
-                                        page: 0,
-                                        pageSize: 5,
-                                    },
-                                },
-                            }}
                             loading={isLoading}
-                            paginationMode={"client"}
+                            rows={filteredRows}
+                            rowCount={totalRows}
+                            paginationMode={"server"}
+                            paginationModel={filters.pagination}
                             pageSizeOptions={[5, 25, 100]}
                             onPaginationModelChange={(model) => 
                                 setFilters(prev => ({
