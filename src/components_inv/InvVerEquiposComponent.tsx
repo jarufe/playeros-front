@@ -66,7 +66,7 @@ export const InvVerEquiposComponent = () => {
         };
     }
     const [filters, setFilters] = useState<Filters>({
-        showOnlyValid: false,
+        showOnlyValid: true,
         searchText: '',
         pagination: { page: 0, pageSize: 5 }
     });
@@ -217,7 +217,7 @@ export const InvVerEquiposComponent = () => {
                                 }
                                 color="primary"
                                 >
-                                {filters.showOnlyValid ? (
+                                {!filters.showOnlyValid ? (
                                     <DeleteIcon color="error" />
                                 ) : (
                                     <DeleteOutlineIcon />
